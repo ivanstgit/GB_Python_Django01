@@ -1,25 +1,30 @@
 {% extends 'base.html' %}
+
+{% block title %}
+  Новости
+{% endblock title %}
+
 {% block content %}
 
   {% if page_num %}
     <div class="card my-2">
       <div class="card-body">
-        <p class="card-text">По данным сайта 120.su; текущая страница: {{ page_num }}</p>
+        <p class="card-text">Текущая страница: {{ page_num }}</p>
       </div>
     </div>
   {% endif %}
 
   <div class="row">
     <div class="col-lg-8">
-      {% for i in news_list %}
+      {% for item in news_list %}
         <div class="card my-2">
           <div class="card-body">
-            <h5 class="card-title">{{ i.title }}</h5>
+            <h5 class="card-title">{{ item.title }}</h5>
             <h6 class="card-subtitle mb-2 text-muted">
-              {{ i.datetime|date:"Y-m-d h-i-s" }}
+              {{ item.created|date:"Y-m-d h-i-s" }}
             </h6>
-            <p class="card-text">{{ i.preview }}</p>
-            <a href="#" class="card-link">Подробнее</a>
+            <p class="card-text">{{ item.preambule }}</p>
+            <a href="{% url 'mainapp:news_detail' pk=item.pk %}" class="card-link">Подробнее</a>
           </div>
         </div>
       {% endfor %}
@@ -56,11 +61,12 @@
       <ul class="pagination">
         {% for j in pages_range %}
           {% if page_num > 1 and forloop.first %}
-            <li class="page-item"><a class="page-link" href="{% url 'mainapp:news' %}?page={{ page_num|add:"-1" }}">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="{% url 'mainapp:news' %}?page={{ page_num|add:" -1"
+              }}">Previous</a></li>
           {% endif %}
           <li class="page-item"><a class="page-link" href="{% url 'mainapp:news' %}?page={{ j }}">{{ j }}</a></li>
-          {% if page_num < j and forloop.last %}
-            <li class="page-item"><a class="page-link" href="{% url 'mainapp:news' %}?page={{ page_num|add:"1" }}">Next</a></li>
+          {% if page_num < j and forloop.last %} <li class="page-item"><a class="page-link"
+            href="{% url 'mainapp:news' %}?page={{ page_num|add:" 1" }}">Next</a></li>
           {% endif %}
         {% endfor %}
       </ul>
