@@ -2,5 +2,7 @@
     "python.defaultInterpreterPath": "../venv/bin/python3",
     "python.autoComplete.extraPaths": [
     
-    ]
+    ],
+    "python.analysis.extraPaths": [],
+    "python.formatting.provider": "black"
 }
