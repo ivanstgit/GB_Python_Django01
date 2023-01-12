@@ -61,12 +61,17 @@
       <ul class="pagination">
         {% for j in pages_range %}
           {% if page_num > 1 and forloop.first %}
-            <li class="page-item"><a class="page-link" href="{% url 'mainapp:news' %}?page={{ page_num|add:" -1"
-              }}">Previous</a></li>
+            <li class="page-item">
+              <a class="page-link" href="{% url 'mainapp:news' %}?page={{ page_num|add:'-1' }}">Previous</a>
+            </li>
           {% endif %}
-          <li class="page-item"><a class="page-link" href="{% url 'mainapp:news' %}?page={{ j }}">{{ j }}</a></li>
-          {% if page_num < j and forloop.last %} <li class="page-item"><a class="page-link"
-            href="{% url 'mainapp:news' %}?page={{ page_num|add:" 1" }}">Next</a></li>
+          <li class="page-item">
+            <a class="page-link" href="{% url 'mainapp:news' %}?page={{ j }}">{{ j }}</a>
+          </li>
+          {% if page_num < j and forloop.last %}
+            <li class="page-item">
+              <a class="page-link" href="{% url 'mainapp:news' %}?page={{ page_num|add:'1' }}">Next</a>
+            </li>
           {% endif %}
         {% endfor %}
       </ul>
