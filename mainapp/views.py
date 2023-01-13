@@ -1,7 +1,7 @@
-import json
-from datetime import datetime
-
+from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
+
+from mainapp import models as mainapp_models
 
 
 #
@@ -17,13 +17,11 @@ class NewsPageView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         # Create your own data
-        news_dict = {}
-        with open("mainapp/news.json", "r", encoding="utf-8") as news_file:
-            news_dict = json.load(news_file)
+        news_qs = mainapp_models.News.objects.all()
 
         # Read page number and adjust
         items_per_page = 5
-        pages_count = 1 + len(news_dict.keys()) // items_per_page
+        pages_count = 1 + len(news_qs) // items_per_page
         if self.request.GET.get("page"):
             page_num = int(self.request.GET.get("page"))
         else:
@@ -35,12 +33,9 @@ class NewsPageView(TemplateView):
         # Calculate slices for current page
         news_from_index = (page_num - 1) * items_per_page
         news_to_index = page_num * items_per_page - 1
-        if len(news_dict) <= news_to_index:
-            news_to_index = len(news_dict)
-
-        news_list = list(news_dict.values())[news_from_index:news_to_index:1]
-        for item in news_list:
-            item["datetime"] = datetime.strptime(item.get("datetime"), "%Y-%m-%dT%H:%M:%S.%f")
+        if len(news_qs) <= news_to_index:
+            news_to_index = len(news_qs)
+        news_list = list(news_qs[news_from_index:news_to_index:1])
 
         context["news_list"] = news_list
         context["page_num"] = page_num
@@ -50,8 +45,33 @@ class NewsPageView(TemplateView):
         return context
 
 
-class CoursesPageView(TemplateView):
+class NewsPageDetailView(TemplateView):
+    template_name = "mainapp/news_detail.html"
+
+    def get_context_data(self, pk=None, **kwargs):
+        context = super().get_context_data(pk=pk, **kwargs)
+        context["news_object"] = get_object_or_404(mainapp_models.News, pk=pk)
+        return context
+
+
+class CoursesListView(TemplateView):
     template_name = "mainapp/courses_list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(CoursesListView, self).get_context_data(**kwargs)
+        context["objects"] = mainapp_models.Courses.objects.all()[:7]
+        return context
+
+
+class CoursesDetailView(TemplateView):
+    template_name = "mainapp/courses_detail.html"
+
+    def get_context_data(self, pk=None, **kwargs):
+        context = super(CoursesDetailView, self).get_context_data(**kwargs)
+        context["course_object"] = get_object_or_404(mainapp_models.Courses, pk=pk)
+        context["lessons"] = mainapp_models.Lesson.objects.filter(course=context["course_object"])
+        context["teachers"] = mainapp_models.CourseTeachers.objects.filter(course=context["course_object"])
+        return context
 
 
 class ContactsPageView(TemplateView):
