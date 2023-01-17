@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "markdownify.apps.MarkdownifyConfig",
     "social_django",
+    "crispy_forms",
     "mainapp",
     "authapp",
 ]
@@ -150,6 +151,8 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 LOGIN_REDIRECT_URL = "mainapp:main_page"
 LOGOUT_REDIRECT_URL = "mainapp:main_page"
+
+CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 SOCIAL_AUTH_GITHUB_KEY = "572d0324521a9698dd3c"
 SOCIAL_AUTH_GITHUB_SECRET = "97f156758e7e2a58577593615404e0975294bd09"
