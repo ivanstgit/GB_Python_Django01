@@ -1,57 +1,48 @@
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.views.generic import TemplateView
+from django.template.loader import render_to_string
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
+from mainapp import forms as mainapp_forms
 from mainapp import models as mainapp_models
 
 
-#
 class MainPageView(TemplateView):
     template_name = "mainapp/index.html"
 
 
-class NewsPageView(TemplateView):
-    template_name = "mainapp/news.html"
+class NewsListView(ListView):
+    model = mainapp_models.News
+    paginate_by = 5
 
-    def get_context_data(self, **kwargs):
-        # Get all previous data
-        context = super().get_context_data(**kwargs)
-
-        # Create your own data
-        news_qs = mainapp_models.News.objects.all()
-
-        # Read page number and adjust
-        items_per_page = 5
-        pages_count = 1 + len(news_qs) // items_per_page
-        if self.request.GET.get("page"):
-            page_num = int(self.request.GET.get("page"))
-        else:
-            page_num = 1
-
-        if page_num > pages_count:
-            page_num = pages_count
-
-        # Calculate slices for current page
-        news_from_index = (page_num - 1) * items_per_page
-        news_to_index = page_num * items_per_page - 1
-        if len(news_qs) <= news_to_index:
-            news_to_index = len(news_qs)
-        news_list = list(news_qs[news_from_index:news_to_index:1])
-
-        context["news_list"] = news_list
-        context["page_num"] = page_num
-        context["pages_range"] = range(1, pages_count + 1)
-        context["items_per_page"] = items_per_page
-
-        return context
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted=False)
 
 
-class NewsPageDetailView(TemplateView):
-    template_name = "mainapp/news_detail.html"
+class NewsCreateView(PermissionRequiredMixin, CreateView):
+    model = mainapp_models.News
+    fields = "__all__"
+    success_url = reverse_lazy("mainapp:news")
+    permission_required = ("mainapp.add_news",)
 
-    def get_context_data(self, pk=None, **kwargs):
-        context = super().get_context_data(pk=pk, **kwargs)
-        context["news_object"] = get_object_or_404(mainapp_models.News, pk=pk)
-        return context
+
+class NewsDetailView(DetailView):
+    model = mainapp_models.News
+
+
+class NewsUpdateView(PermissionRequiredMixin, UpdateView):
+    model = mainapp_models.News
+    fields = "__all__"
+    success_url = reverse_lazy("mainapp:news")
+    permission_required = ("mainapp.change_news",)
+
+
+class NewsDeleteView(PermissionRequiredMixin, DeleteView):
+    model = mainapp_models.News
+    success_url = reverse_lazy("mainapp:news")
+    permission_required = ("mainapp.delete_news",)
 
 
 class CoursesListView(TemplateView):
@@ -71,7 +62,27 @@ class CoursesDetailView(TemplateView):
         context["course_object"] = get_object_or_404(mainapp_models.Courses, pk=pk)
         context["lessons"] = mainapp_models.Lesson.objects.filter(course=context["course_object"])
         context["teachers"] = mainapp_models.CourseTeachers.objects.filter(course=context["course_object"])
+        if not self.request.user.is_anonymous:
+            if not mainapp_models.CourseFeedback.objects.filter(
+                course=context["course_object"], user=self.request.user
+            ).count():
+                context["feedback_form"] = mainapp_forms.CourseFeedbackForm(
+                    course=context["course_object"], user=self.request.user
+                )
+        context["feedback_list"] = mainapp_models.CourseFeedback.objects.filter(
+            course=context["course_object"]
+        ).order_by("-created", "-rating")[:5]
         return context
+
+
+class CourseFeedbackFormProcessView(LoginRequiredMixin, CreateView):
+    model = mainapp_models.CourseFeedback
+    form_class = mainapp_forms.CourseFeedbackForm
+
+    def form_valid(self, form):
+        self.object = form.save()
+        rendered_card = render_to_string("mainapp/includes/feedback_card.html", context={"item": self.object})
+        return JsonResponse({"card": rendered_card})
 
 
 class ContactsPageView(TemplateView):
@@ -80,7 +91,3 @@ class ContactsPageView(TemplateView):
 
 class DocSitePageView(TemplateView):
     template_name = "mainapp/doc_site.html"
-
-
-class LoginPageView(TemplateView):
-    template_name = "mainapp/login.html"
