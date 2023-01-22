@@ -4,6 +4,7 @@ from mainapp import views
 from mainapp.apps import MainappConfig
 
 app_name = MainappConfig.name
+
 urlpatterns = [
     path("", views.MainPageView.as_view(), name="main_page"),
     path("news/", views.NewsListView.as_view(), name="news"),
@@ -36,4 +37,6 @@ urlpatterns = [
     ),
     path("contacts/", views.ContactsPageView.as_view(), name="contacts"),
     path("doc_site/", views.DocSitePageView.as_view(), name="doc_site"),
+    path("log_view/", views.LogView.as_view(), name="log_view"),
+    path("log_download/", views.LogDownloadView.as_view(), name="log_download"),
 ]
