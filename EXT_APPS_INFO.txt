@@ -1,0 +1,14 @@
+sudo apt install redis-server
+mkdir -p ./var/log
+
+# launch django
+source ./venv/bin/activate
+python manage.py runserver 0.0.0.0:8000 
+
+# launch before django in separate terminal
+celery -A config worker -l INFO
+
+# if empty base run migrations
+python manage.py migrate
+python manage.py loaddata 001_news 002_cources 003_lessons 004_teachers
+python manage.py createsuperuser
