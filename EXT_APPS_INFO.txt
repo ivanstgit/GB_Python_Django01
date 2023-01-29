@@ -1,5 +1,9 @@
+BEFORE
 sudo apt install redis-server
 mkdir -p ./var/log
+
+# check if locale exists for gettexts
+locale -a | grep ru
 
 # launch django
 source ./venv/bin/activate
@@ -12,3 +16,6 @@ celery -A config worker -l INFO
 python manage.py migrate
 python manage.py loaddata 001_news 002_cources 003_lessons 004_teachers
 python manage.py createsuperuser
+
+# for developers
+django-admin makemessages -l ru --no-location
