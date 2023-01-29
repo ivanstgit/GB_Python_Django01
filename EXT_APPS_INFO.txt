@@ -1,6 +1,8 @@
 BEFORE
 sudo apt install redis-server
 mkdir -p ./var/log
+mkdir var/selenium
+mkdir -p var/screenshots
 
 # check if locale exists for gettexts
 locale -a | grep ru
@@ -15,6 +17,7 @@ celery -A config worker -l INFO
 # if empty base run migrations
 python manage.py migrate
 python manage.py loaddata 001_news 002_cources 003_lessons 004_teachers
+# there is fixture 001_user_admin, but it's for autotests
 python manage.py createsuperuser
 
 # for developers
